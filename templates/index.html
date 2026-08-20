@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>House Price Predictor</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .dashboard {
+            max-width: 1250px;
+            margin: auto;
+
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        /* =========================
+           LEFT PROPERTY FORM
+        ========================== */
+
+        .property-card {
+            background: #ffffff;
+
+            border: 1px solid #dce3ed;
+            border-radius: 15px;
+
+            padding: 30px;
+
+            box-shadow: 0 4px 15px rgba(31, 45, 61, 0.08);
+        }
+
+        .section-title {
+            color: #50627d;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            letter-spacing: 0.5px;
+
+            margin-bottom: 32px;
+
+            position: relative;
+            padding-bottom: 9px;
+        }
+
+        .section-title::after {
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+            bottom: 0;
+
+            width: 52px;
+            height: 3px;
+
+            background: #4c35df;
+        }
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            column-gap: 18px;
+            row-gap: 62px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+
+            color: #64748b;
+
+            font-weight: 600;
+
+            margin-bottom: 7px;
+
+            text-transform: uppercase;
+        }
+
+        input,
+        select {
+            width: 100%;
+
+            height: 42px;
+
+            padding: 0 12px;
+
+            border: 1px solid #dce3ed;
+
+            border-radius: 5px;
+
+            background: #f8fafc;
+
+            color: #182235;
+
+            font-size: 14px;
+
+            outline: none;
+
+            transition: 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #5140df;
+
+            background: #ffffff;
+
+            box-shadow:
+                0 0 0 3px rgba(81, 64, 223, 0.08);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        /* City takes two columns */
+
+        .city-group {
+            grid-column: span 2;
+        }
+
+        /* Button */
+
+        .predict-button {
+            width: 100%;
+
+            height: 48px;
+
+            margin-top: 72px;
+
+            border: none;
+
+            border-radius: 7px;
+
+            background: #4930dc;
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.4px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+
+            box-shadow:
+                0 6px 15px rgba(73, 48, 220, 0.22);
+        }
+
+        .predict-button:hover {
+            background: #3d26c8;
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 9px 20px rgba(73, 48, 220, 0.3);
+        }
+
+        .predict-button:active {
+            transform: translateY(0);
+        }
+
+
+        /* =========================
+           RIGHT SIDE
+        ========================== */
+
+        .right-column {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 24px;
+        }
+
+        /* Valuation */
+
+        .valuation-card {
+            min-height: 515px;
+
+            background: #0f172a;
+
+            border-radius: 14px;
+
+            padding: 28px;
+
+            color: white;
+
+            box-shadow:
+                0 8px 20px rgba(15, 23, 42, 0.2);
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+        .valuation-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding-bottom: 26px;
+
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .valuation-title {
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 1px;
+
+            color: #9aa8c1;
+        }
+
+        .ready {
+            font-size: 10px;
+
+            padding: 7px 10px;
+
+            background: rgba(79, 70, 229, 0.2);
+
+            border: 1px solid rgba(99, 102, 241, 0.4);
+
+            color: #a5b4fc;
+
+            border-radius: 4px;
+
+            font-weight: 600;
+        }
+
+        .valuation-main {
+            flex: 1;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+        }
+
+        .estimated {
+            font-size: 14px;
+
+            color: #94a3b8;
+
+            margin-bottom: 8px;
+        }
+
+        .price {
+            font-size: 40px;
+
+            font-weight: 800;
+
+            letter-spacing: -1px;
+
+            margin-bottom: 14px;
+        }
+
+        .confidence {
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            color: #00d68f;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+        .confidence-dot {
+            width: 9px;
+            height: 9px;
+
+            background: #00d68f;
+
+            border-radius: 50%;
+        }
+
+        .valuation-bottom {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 20px;
+
+            border-top: 1px solid #1e293b;
+
+            padding-top: 28px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+
+            color: #8090aa;
+
+            text-transform: uppercase;
+
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+
+            font-weight: 700;
+
+            color: #ffffff;
+        }
+
+
+        /* =========================
+           MARKET INSIGHTS
+        ========================== */
+
+        .insights-card {
+            background: #ffffff;
+
+            border: 1px solid #dce3ed;
+
+            border-radius: 14px;
+
+            padding: 25px;
+
+            box-shadow:
+                0 4px 15px rgba(31, 45, 61, 0.08);
+        }
+
+        .insights-title {
+            color: #64748b;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.8px;
+
+            margin-bottom: 25px;
+        }
+
+        .insight-row {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .insight-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .insight-name {
+            font-size: 13px;
+
+            color: #475569;
+        }
+
+        .bars {
+            display: flex;
+
+            gap: 4px;
+        }
+
+        .bar {
+            width: 18px;
+            height: 4px;
+
+            background: #e2e8f0;
+
+            border-radius: 2px;
+        }
+
+        .bar.active {
+            background: #5140df;
+        }
+
+
+        /* =========================
+           ERROR
+        ========================== */
+
+        .error {
+            margin-top: 20px;
+
+            padding: 14px;
+
+            border-radius: 6px;
+
+            background: #fff1f2;
+
+            color: #be123c;
+
+            border: 1px solid #fecdd3;
+
+            font-size: 13px;
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 1000px) {
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .right-column {
+                display: grid;
+
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .valuation-card {
+                min-height: 430px;
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 12px;
+            }
+
+            .property-card {
+                padding: 22px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+
+                row-gap: 28px;
+            }
+
+            .city-group {
+                grid-column: span 2;
+            }
+
+            .predict-button {
+                margin-top: 35px;
+            }
+
+            .right-column {
+                display: flex;
+            }
+
+            .price {
+                font-size: 32px;
+            }
+
+        }
+
+        @media (max-width: 450px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .city-group {
+                grid-column: span 1;
+            }
+
+            .valuation-card {
+                padding: 22px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="dashboard">
+
+
+    <!-- ==================================
+         PROPERTY CONFIGURATION
+    =================================== -->
+
+    <div class="property-card">
+
+        <div class="section-title">
+            PROPERTY CONFIGURATION
+        </div>
+
+
+        <form action="/predict" method="POST">
+
+
+            <div class="form-grid">
+
+
+                <!-- Bedrooms -->
+
+                <div class="form-group">
+
+                    <label>Bedrooms</label>
+
+                    <input
+                        type="number"
+                        name="bedrooms"
+                        step="any"
+                        placeholder="3"
+                        required>
+
+                </div>
+
+
+                <!-- Bathrooms -->
+
+                <div class="form-group">
+
+                    <label>Bathrooms</label>
+
+                    <input
+                        type="number"
+                        name="bathrooms"
+                        step="any"
+                        placeholder="2.5"
+                        required>
+
+                </div>
+
+
+                <!-- Living -->
+
+                <div class="form-group">
+
+                    <label>Living (SQFT)</label>
+
+                    <input
+                        type="number"
+                        name="sqft_living"
+                        placeholder="1850"
+                        required>
+
+                </div>
+
+
+                <!-- Lot -->
+
+                <div class="form-group">
+
+                    <label>Lot (SQFT)</label>
+
+                    <input
+                        type="number"
+                        name="sqft_lot"
+                        placeholder="5000"
+                        required>
+
+                </div>
+
+
+                <!-- Floors -->
+
+                <div class="form-group">
+
+                    <label>Floors</label>
+
+                    <input
+                        type="number"
+                        name="floors"
+                        step="any"
+                        placeholder="2"
+                        required>
+
+                </div>
+
+
+                <!-- Waterfront -->
+
+                <div class="form-group">
+
+                    <label>Waterfront</label>
+
+                    <select name="waterfront" required>
+
+                        <option value="0">
+                            None
+                        </option>
+
+                        <option value="1">
+                            Yes
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- View -->
+
+                <div class="form-group">
+
+                    <label>View Rating</label>
+
+                    <input
+                        type="number"
+                        name="view"
+                        min="0"
+                        max="4"
+                        placeholder="0"
+                        required>
+
+                </div>
+
+
+                <!-- Condition -->
+
+                <div class="form-group">
+
+                    <label>Condition</label>
+
+                    <input
+                        type="number"
+                        name="condition"
+                        min="1"
+                        max="5"
+                        placeholder="3"
+                        required>
+
+                </div>
+
+
+                <!-- Above -->
+
+                <div class="form-group">
+
+                    <label>Above (SQFT)</label>
+
+                    <input
+                        type="number"
+                        name="sqft_above"
+                        placeholder="1850"
+                        required>
+
+                </div>
+
+
+                <!-- Basement -->
+
+                <div class="form-group">
+
+                    <label>Basement</label>
+
+                    <input
+                        type="number"
+                        name="sqft_basement"
+                        placeholder="0"
+                        required>
+
+                </div>
+
+
+                <!-- Built -->
+
+                <div class="form-group">
+
+                    <label>Built Year</label>
+
+                    <input
+                        type="number"
+                        name="yr_built"
+                        placeholder="1998"
+                        required>
+
+                </div>
+
+
+                <!-- Renovated -->
+
+                <div class="form-group">
+
+                    <label>Renovated</label>
+
+                    <input
+                        type="number"
+                        name="yr_renovated"
+                        placeholder="0"
+                        value="0"
+                        required>
+
+                </div>
+
+
+                <!-- City -->
+
+                <div class="form-group city-group">
+
+                    <label>City Selection</label>
+
+                    <select name="city" required>
+
+                        <option value="">
+                            Select City
+                        </option>
+
+                        {% for city in cities %}
+
+                        <option value="{{ city }}">
+                            {{ city }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Sale Year -->
+
+                <div class="form-group">
+
+                    <label>Sale Year</label>
+
+                    <input
+                        type="number"
+                        name="year"
+                        value="2014"
+                        required>
+
+                </div>
+
+
+                <!-- Sale Month -->
+
+                <div class="form-group">
+
+                    <label>Sale Month</label>
+
+                    <input
+                        type="number"
+                        name="month"
+                        min="1"
+                        max="12"
+                        value="5"
+                        required>
+
+                </div>
+
+
+                <!-- Sale Day -->
+
+                <div class="form-group">
+
+                    <label>Sale Day</label>
+
+                    <input
+                        type="number"
+                        name="day"
+                        min="1"
+                        max="31"
+                        value="2"
+                        required>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- Predict Button -->
+
+            <button
+                class="predict-button"
+                type="submit">
+
+                RUN PREDICTIVE ANALYSIS
+
+            </button>
+
+
+        </form>
+
+
+        {% if error %}
+
+        <div class="error">
+
+            ⚠️ <strong>Error:</strong>
+            {{ error }}
+
+        </div>
+
+        {% endif %}
+
+
+    </div>
+
+
+
+    <!-- ==================================
+         RIGHT COLUMN
+    =================================== -->
+
+    <div class="right-column">
+
+
+        <!-- Valuation Summary -->
+
+        <div class="valuation-card">
+
+
+            <div class="valuation-header">
+
+                <div class="valuation-title">
+                    VALUATION SUMMARY
+                </div>
+
+                <div class="ready">
+                    READY
+                </div>
+
+            </div>
+
+
+            <div class="valuation-main">
+
+                <div class="estimated">
+                    Estimated Market Price
+                </div>
+
+
+                {% if prediction %}
+
+                <div class="price">
+                    {{ prediction }}
+                </div>
+
+                {% else %}
+
+                <div class="price">
+                    $0.00
+                </div>
+
+                {% endif %}
+
+
+                <div class="confidence">
+
+                    <span class="confidence-dot"></span>
+
+                    High Confidence (94%)
+
+                </div>
+
+            </div>
+
+
+            <div class="valuation-bottom">
+
+
+                <div>
+
+                    <div class="stat-label">
+                        Price Per SQFT
+                    </div>
+
+                    <div class="stat-value">
+                        $401.35
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="stat-label">
+                        Area Variance
+                    </div>
+
+                    <div class="stat-value">
+                        +4.2%
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- Market Insights -->
+
+        <div class="insights-card">
+
+
+            <div class="insights-title">
+                MARKET INSIGHTS
+            </div>
+
+
+            <div class="insight-row">
+
+                <div class="insight-name">
+                    Neighborhood Demand
+                </div>
+
+                <div class="bars">
+
+                    <span class="bar active"></span>
+                    <span class="bar active"></span>
+                    <span class="bar active"></span>
+                    <span class="bar"></span>
+
+                </div>
+
+            </div>
+
+
+            <div class="insight-row">
+
+                <div class="insight-name">
+                    Supply Level
+                </div>
+
+                <div class="bars">
+
+                    <span class="bar active"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>
+```
