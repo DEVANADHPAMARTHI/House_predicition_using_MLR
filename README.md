@@ -669,7 +669,7 @@ If you found this project useful:
 
 The House Price Prediction application is deployed on Render.
 
-🔗 **Live Demo:https://house-predicition-using-mlr-3.onrender.com
+🔗 **Live Demo:**https://house-predicition-using-mlr-3.onrender.com
 ```
 
 > ⚠️ **Note:** The application is hosted using Render's free tier. The first request may take a few seconds because the server can take time to wake up.
@@ -680,7 +680,7 @@ The House Price Prediction application is deployed on Render.
 
 The complete source code, Machine Learning model, dataset, Flask application, and frontend files are available on GitHub.
 
-🔗 **GitHub Repository:https://github.com/DEVANADHPAMARTHI/House_predicition_using_MLR**
+🔗 **GitHub Repository:**https://github.com/DEVANADHPAMARTHI/House_predicition_using_MLR
 
 ---
 
